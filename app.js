@@ -1,3 +1,4 @@
+require('dotenv').config();
 const axios = require('axios');
 const _ = require('lodash');
 const moment = require('moment');
@@ -32,15 +33,28 @@ function formatAndSendTweet(event) {
     // }
 
     // OPTIONAL PREFERENCE - if you want the tweet to include an attached image instead of just text
-    // const imageUrl = _.get(event, ['asset', 'image_url']);
-    // return tweet.tweetWithImage(tweetText, imageUrl);
-
-    return tweet.tweet(tweetText);
+     const imageUrl = _.get(event, ['asset', 'image_url']);
+     return tweet.tweetWithImage(tweetText, imageUrl);
+    
+    // When using OPTIONAL PREFERENCE ABOVE for including the image, comment this return statement as it is no longer used
+    // return tweet.tweet(tweetText);
 }
 
+// Get the current date and time to display to console with sales info
+function currentDateTime() {
+    let current = new Date();
+    let cDate = current.getFullYear() + '-' + (current.getMonth() + 1) + '-' + current.getDate();
+    let cTime = current.getHours() + ":" + current.getMinutes() + ":" + current.getSeconds();
+    let dateTime = cDate + ' ' + cTime;
+  
+    return(dateTime);
+  }
+  
 // Poll OpenSea every 60 seconds & retrieve all sales for a given collection in either the time since the last sale OR in the last minute
 setInterval(() => {
     const lastSaleTime = cache.get('lastSaleTime', null) || moment().startOf('minute').subtract(59, "seconds").unix();
+
+    let datetime = currentDateTime()
 
     console.log(`Last sale (in seconds since Unix epoch): ${cache.get('lastSaleTime', null)}`);
 
@@ -60,7 +74,7 @@ setInterval(() => {
             return new Date(created);
         })
 
-        console.log(`${events.length} sales since the last one...`);
+        console.log(`${datetime} - ${events.length} sales since the last one...`);
 
         _.each(sortedEvents, (event) => {
             const created = _.get(event, 'created_date');
